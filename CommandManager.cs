@@ -22,7 +22,7 @@ namespace FxUpdater
             prefix = _prefix;
             activeCommand = false;
 
-            commands.Add("update", new Action<string>(Update));
+            commands.Add("update", new Action<string, string>(Update));
             commands.Add("clear", new Action(Clear));
         }
 
@@ -63,16 +63,35 @@ namespace FxUpdater
             activeCommand = false;
         }
 
-        public async void Update(string path)
+        public async void Update(string distrib, string path)
         {
-            Console.WriteLine("INFO: FxServer update running");
+            // SUCH UGLY CODE
+            if (distrib == string.Empty || (distrib != "linux" && distrib != "windows"))
+            {
+                Console.WriteLine("ERROR: Please choose \"linux\" or \"windows\" as first parameter");
+                activeCommand = false;
+                return;
+            }
+            if (path == string.Empty)
+            {
+                Console.WriteLine("ERROR: No path specified");
+                activeCommand = false;
+                return;
+            }
+
+            if (distrib == "linux")
+                distrib = "build_proot_linux";
+            else if (distrib == "windows")
+                distrib = "build_server_windows";
 
             path = path.TrimEnd('/').TrimEnd('\\');
+
+            Console.WriteLine("INFO: FxServer update running");
 
             using (WebClient client = new WebClient())
             {
                 // Reading html
-                string htmlFile = await client.DownloadStringTaskAsync("https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/");
+                string htmlFile = await client.DownloadStringTaskAsync($"https://runtime.fivem.net/artifacts/fivem/{distrib}/master/");
                 HtmlDocument htmlDocument = new HtmlDocument();
                 htmlDocument.LoadHtml(htmlFile);
                 HtmlNode aElement = htmlDocument.DocumentNode.Descendants().Where(o => o.Name == "a").Last();
