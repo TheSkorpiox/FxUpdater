@@ -1,6 +1,8 @@
 ﻿using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -18,7 +20,7 @@ namespace FxUpdater
         {
             prefix = _prefix;
 
-            commands.Add("update", new Action(Update));
+            commands.Add("update", new Action<string>(Update));
         }
 
         public void ExecuteCommand(string command)
@@ -49,7 +51,7 @@ namespace FxUpdater
                 Console.WriteLine("ERROR: You should begin a command with '/'");
         }
 
-        public async void Update()
+        public async void Update(string path)
         {
             Console.WriteLine("INFO: FxServer update running");
 
@@ -62,17 +64,20 @@ namespace FxUpdater
 
                 Console.WriteLine("INFO: Downloading file");
                 client.DownloadProgressChanged += OnDownloadProgressChanged;
-                await client.DownloadFileTaskAsync($"https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/{aElement.InnerText}/server.zip", "C:/Users/Marceau/Desktop/server.zip");
+                Directory.CreateDirectory(path);
+                await client.DownloadFileTaskAsync($"https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/{aElement.InnerText}/server.zip", $"{path}/server.zip");
             }
-            
-            // TODO: Unzip, create a backup, and install new version
+
+            // TODO: create a backup with a versionning system
+            ZipFile.ExtractToDirectory($"{path}/server.zip", path);
+            File.Delete($"{path}/server.zip");
 
             Console.WriteLine("INFO: Update finished");
         }
 
         private void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            Console.WriteLine(e.ProgressPercentage);
+            Console.Write($"{((double)e.BytesReceived).ToMo("N2")} / {((double)e.TotalBytesToReceive).ToMo("N2")} Mo -> {e.ProgressPercentage}% downloaded\r");
         }
     }
 }
