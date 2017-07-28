@@ -6,4 +6,5 @@ Fx server updater, for FiveM
 
 ```
 /update [YourPath] - Download the file at the specified path. It can create the directory if needed
+/clear - Clear the console
 ```
