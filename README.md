@@ -1,4 +1,4 @@
-# FxUpdated
+# FxUpdater
 
 Fx server updater, for FiveM
 
