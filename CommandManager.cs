@@ -81,7 +81,7 @@ namespace FxUpdater
                 // Creating directory & .version file
                 Directory.CreateDirectory(path);
 
-                Console.WriteLine($"INFO: Latest version detected is {onlineVersion}");
+                Console.WriteLine($"INFO: Online version {onlineVersion} detected");
                 if (File.Exists($"{path}/version"))
                 {
                     string localVersion = File.ReadAllText($"{path}/version");
@@ -107,7 +107,12 @@ namespace FxUpdater
                         Directory.Move($"{path}/citizen", $"{path}/{localVersion}/citizen");
                     }
                 }
-
+                else
+                {
+                    if (Directory.GetDirectories(path).Count() != 0 || Directory.GetFiles(path).Count() != 0)
+                        path.CopyServerFiles("versionless");
+                }
+                
                 File.Create($"{path}/version").Close();
                 File.WriteAllText($"{path}/version", onlineVersion);
                 

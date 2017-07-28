@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,9 +11,22 @@ namespace FxUpdater
     {
         public static string ToMo(this double size, string format)
         {
-            //double dSize = Convert.ToDouble(size);
-
             return ((size / 1000000).ToString(format));
+        }
+
+        public static void CopyServerFiles(this string path, string copyTo)
+        {
+            Directory.CreateDirectory($"{path}/{copyTo}");
+
+            string[] files = Directory.GetFiles(path);
+
+            foreach (string file in files)
+            {
+                string fileName = file.Split('\\').Last();
+                File.Move($"{path}/{fileName}", $"{path}/{copyTo}/{fileName}");
+            }
+
+            Directory.Move($"{path}/citizen", $"{path}/{copyTo}/citizen");
         }
     }
 }
