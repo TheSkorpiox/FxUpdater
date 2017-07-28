@@ -15,12 +15,15 @@ namespace FxUpdater
     {
         private Dictionary<string, Delegate> commands = new Dictionary<string, Delegate>();
         private string prefix;
+        public bool activeCommand;
 
         public CommandManager(string _prefix)
         {
             prefix = _prefix;
+            activeCommand = false;
 
             commands.Add("update", new Action<string>(Update));
+            commands.Add("clear", new Action(Clear));
         }
 
         public void ExecuteCommand(string command)
@@ -39,16 +42,25 @@ namespace FxUpdater
 
                 try
                 {
+                    activeCommand = true;
                     method.DynamicInvoke(commandArgs.ToArray());
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex.Message);
                     Console.WriteLine("ERROR: Command does not exist or have wrong parameters");
+
+                    activeCommand = false;
                 }
             }
             else
                 Console.WriteLine("ERROR: You should begin a command with '/'");
+        }
+
+        public void Clear()
+        {
+            Console.Clear();
+            activeCommand = false;
         }
 
         public async void Update(string path)
@@ -77,6 +89,7 @@ namespace FxUpdater
                     if (localVersion == onlineVersion)
                     {
                         Console.WriteLine("ERROR: You already have the latest version");
+                        activeCommand = false;
                         return;
                     }
                     else
@@ -110,6 +123,7 @@ namespace FxUpdater
             File.Delete($"{path}/server.zip");
 
             Console.WriteLine("INFO: Update finished");
+            activeCommand = false;
         }
 
         private void OnDownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
