@@ -12,12 +12,17 @@ namespace FxUpdater
         {
             CommandManager cmdManager = new CommandManager("/");
 
-            while (true)
+            if (args.Count() != 0)
+                cmdManager.ExecuteCommand(args.ToList());
+            else
             {
-                if (cmdManager.activeCommand == false)
-                    Console.Write("> ");
+                while (true)
+                {
+                    if (cmdManager.activeCommand == false)
+                        Console.Write("> ");
 
-                cmdManager.ExecuteCommand(Console.ReadLine());
+                    cmdManager.ParseCommand(Console.ReadLine());
+                }
             }
         }
     }

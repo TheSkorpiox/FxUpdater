@@ -26,12 +26,14 @@ namespace FxUpdater
             commands.Add("clear", new Action(Clear));
         }
 
-        public void ExecuteCommand(string command)
+        public void ParseCommand(string command)
         {
             if (command.StartsWith(prefix))
             {
                 command = command.TrimStart(prefix.ToCharArray());
                 List<string> commandArgs = command.Split(' ').ToList();
+                ExecuteCommand(commandArgs);
+                /*
                 Delegate method = commands.FirstOrDefault(o => o.Key == commandArgs.First()).Value;
                 if (method == null)
                 {
@@ -52,9 +54,36 @@ namespace FxUpdater
 
                     activeCommand = false;
                 }
+                */
             }
             else
                 Console.WriteLine("ERROR: You should begin a command with '/'");
+        }
+
+        public void ExecuteCommand(List<string> commandArgs)
+        {
+            Delegate method = commands.FirstOrDefault(o => o.Key == commandArgs.First()).Value;
+            if (method == null)
+            {
+                Console.WriteLine("ERROR: Command does not exist");
+                return;
+            }
+            commandArgs.RemoveAt(0);
+
+            try
+            {
+                activeCommand = true;
+                method.DynamicInvoke(commandArgs.ToArray());
+
+                while (activeCommand) ;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Console.WriteLine("ERROR: Command does not exist or have wrong parameters");
+
+                activeCommand = false;
+            }
         }
 
         public void Clear()
