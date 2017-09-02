@@ -16,3 +16,20 @@ You can also clear the console
 ```
 /clear - Clear the console
 ```
+
+## Patchnotes / Releases
+
+### Version 0.3
+
+You can now use bash command line.
+
+For exemple, instead of doing
+```
+FxUpdater.exe
+/update windows [YourPath]
+```
+
+you can do this
+```
+FxUpdater.exe update windows [YourPath]
+```
