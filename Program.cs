@@ -18,7 +18,7 @@ namespace FxUpdater
             {
                 while (true)
                 {
-                    if (cmdManager.activeCommand == false)
+                    if (cmdManager.ActiveCommand == false)
                         Console.Write("> ");
 
                     cmdManager.ParseCommand(Console.ReadLine());

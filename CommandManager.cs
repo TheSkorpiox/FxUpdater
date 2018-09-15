@@ -1,21 +1,25 @@
-﻿using HtmlAgilityPack;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace FxUpdater
 {
     public class CommandManager
     {
         private Dictionary<string, Delegate> commands = new Dictionary<string, Delegate>();
-        private string prefix;
-        public bool activeCommand;
+        private string prefix = "";
+        private bool activeCommand = false;
+
+        public bool ActiveCommand
+        {
+            get { return activeCommand; }
+            private set { }
+        }
 
         public CommandManager(string _prefix)
         {
@@ -33,28 +37,6 @@ namespace FxUpdater
                 command = command.TrimStart(prefix.ToCharArray());
                 List<string> commandArgs = command.Split(' ').ToList();
                 ExecuteCommand(commandArgs);
-                /*
-                Delegate method = commands.FirstOrDefault(o => o.Key == commandArgs.First()).Value;
-                if (method == null)
-                {
-                    Console.WriteLine("ERROR: Command does not exist");
-                    return;
-                }
-                commandArgs.RemoveAt(0);
-
-                try
-                {
-                    activeCommand = true;
-                    method.DynamicInvoke(commandArgs.ToArray());
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine("ERROR: Command does not exist or have wrong parameters");
-
-                    activeCommand = false;
-                }
-                */
             }
             else
                 Console.WriteLine("ERROR: You should begin a command with '/'");
@@ -94,7 +76,6 @@ namespace FxUpdater
 
         public async void Update(string distrib, string path)
         {
-            // SUCH UGLY CODE
             if (distrib == string.Empty || (distrib != "linux" && distrib != "windows"))
             {
                 Console.WriteLine("ERROR: Please choose \"linux\" or \"windows\" as first parameter");
@@ -121,10 +102,16 @@ namespace FxUpdater
             {
                 // Reading html
                 string htmlFile = await client.DownloadStringTaskAsync($"https://runtime.fivem.net/artifacts/fivem/{distrib}/master/");
-                HtmlDocument htmlDocument = new HtmlDocument();
-                htmlDocument.LoadHtml(htmlFile);
-                HtmlNode aElement = htmlDocument.DocumentNode.Descendants().Where(o => o.Name == "a").Last();
-                string onlineVersion = aElement.InnerText.TrimEnd('/');
+                MatchCollection matches = new Regex("href=\"([0-9]*-.*)\">.*([0-9]{2}-[\\w]*-[0-9]{4} [0-9]{2}:[0-9]{2})").Matches(htmlFile);
+
+                Dictionary<DateTime, string> versions = new Dictionary<DateTime, string>();
+                foreach (Match match in matches)
+                {
+                    if (match.Groups.Count > 2)
+                        versions.Add(DateTime.ParseExact(match.Groups[2].Value, "dd-MMM-yyyy HH:mm", CultureInfo.InvariantCulture), match.Groups[1].Value);
+                }
+
+                string onlineVersion = versions.Last().Value.TrimEnd('/');
 
                 // Creating directory & .version file
                 Directory.CreateDirectory(path);
@@ -168,7 +155,7 @@ namespace FxUpdater
                 Console.WriteLine("INFO: Downloading file");
                 client.DownloadProgressChanged += OnDownloadProgressChanged;
 
-                await client.DownloadFileTaskAsync($"https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/{aElement.InnerText}/server.zip", $"{path}/server.zip");
+                await client.DownloadFileTaskAsync($"https://runtime.fivem.net/artifacts/fivem/build_server_windows/master/{onlineVersion}/server.zip", $"{path}/server.zip");
             }
 
             // TODO: create a backup with a versionning system

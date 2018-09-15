@@ -26,7 +26,8 @@ namespace FxUpdater
                 File.Move($"{path}/{fileName}", $"{path}/{copyTo}/{fileName}");
             }
 
-            Directory.Move($"{path}/citizen", $"{path}/{copyTo}/citizen");
+            if (Directory.Exists($"{path}/citizen"))
+                Directory.Move($"{path}/citizen", $"{path}/{copyTo}/citizen");
         }
     }
 }
