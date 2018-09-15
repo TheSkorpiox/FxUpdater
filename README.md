@@ -39,7 +39,7 @@ FxUpdater.exe update windows [YourPath]
 FxUpdater is now running under .Net Core Runtime, for cross-platform compatibility !
 
 You do need to download the .Net Core Runtime in order to run FxUpdater
-You can found it (here)[https://www.microsoft.com/net/download/dotnet-core/2.0]
+You can found it [here](https://www.microsoft.com/net/download/dotnet-core/2.0)
 
 You'll also need to change the way you launch FxUpdater. There is no more executable !
 
